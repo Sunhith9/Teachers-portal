@@ -46,28 +46,25 @@ export default function NotificationsPage() {
 
   const sendMutation = useMutation({
     mutationFn: async (id: string | 'all') => {
-      // In a real app, this would call your backend API (e.g., Twilio, Resend)
-      // For now, we simulate sending by updating the database status
+      const response = await fetch('/api/notifications/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
       
-      // Artificial delay to simulate network request
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const data = await response.json();
       
-      let query = supabase.from('notifications').update({ status: 'sent' });
-      
-      if (id === 'all') {
-        query = query.eq('status', 'pending');
-      } else {
-        query = query.eq('id', id);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send notification(s)');
       }
-      
-      const { error } = await query;
-      if (error) throw error;
       
       return id;
     },
     onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      showToast(id === 'all' ? 'All pending notifications sent successfully' : 'Notification sent successfully', 'success');
+      showToast(id === 'all' ? 'All pending notifications processed successfully' : 'Notification processed successfully', 'success');
     },
     onError: (error) => {
       showToast(error.message || 'Failed to send notification(s)', 'error');
