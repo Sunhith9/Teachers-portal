@@ -22,6 +22,7 @@ export default function AttendancePage() {
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState<Record<string, 'present' | 'absent' | null>>({});
+  const [sendAlertsImmediately, setSendAlertsImmediately] = useState(true);
 
   const { data: classes = [], isLoading: isLoadingClasses } = useQuery({
     queryKey: ['classes'],
@@ -133,25 +134,53 @@ export default function AttendancePage() {
 
       // Handle Notifications for absent students
       const absentStudents = classStudents.filter(s => attendance[s.id] === 'absent');
+      let sentCount = 0;
       if (absentStudents.length > 0) {
         const selectedClassInfo = classes.find(c => c.id === selectedClass);
         const notifications = absentStudents.map(s => ({
           student_id: s.id,
           message: generateNotificationMessage(s.full_name, `${selectedClassInfo?.name}-${selectedClassInfo?.section}`, selectedDate),
-          channel: 'sms' as const,
+          channel: 'whatsapp' as const,
           status: 'pending' as const
         }));
 
-        const { error: notifError } = await supabase.from('notifications').insert(notifications);
-        if (notifError) console.error('Failed to create notifications', notifError);
+        const { data: insertedNotifs, error: notifError } = await supabase.from('notifications').insert(notifications).select('id');
+        if (notifError) {
+          console.error('Failed to create notifications', notifError);
+        } else if (sendAlertsImmediately) {
+          try {
+            const response = await fetch('/api/notifications/send', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ id: 'all' }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+              sentCount = absentStudents.length;
+            } else {
+              console.error('Immediate WhatsApp send error:', data.error);
+            }
+          } catch (err) {
+            console.error('Network error triggering immediate WhatsApp alerts:', err);
+          }
+        }
       }
       
-      return absentStudents.length;
+      return { absentCount: absentStudents.length, sentCount };
     },
-    onSuccess: (absentCount) => {
+    onSuccess: ({ absentCount, sentCount }) => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
+      
+      const alertSuffix = absentCount === 0
+        ? ''
+        : sentCount > 0
+          ? ` (WhatsApp alerts sent to parents!)`
+          : ` (Notifications queued)`;
+          
       showToast(
-        `Attendance saved! ${stats.present} present, ${stats.absent} absent. ${absentCount} notification(s) generated.`,
+        `Attendance saved! ${stats.present} present, ${stats.absent} absent${alertSuffix}`,
         'success'
       );
     },
@@ -183,7 +212,16 @@ export default function AttendancePage() {
             Record daily attendance for your class
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer bg-white dark:bg-gray-800 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <input
+              type="checkbox"
+              checked={sendAlertsImmediately}
+              onChange={(e) => setSendAlertsImmediately(e.target.checked)}
+              className="h-4 w-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+            />
+            <span>Send WhatsApp alerts immediately</span>
+          </label>
           <Button variant="success" onClick={markAllPresent} size="md">
             <CheckCheck className="h-4 w-4" />
             <span className="hidden sm:inline">Mark All Present</span>
