@@ -47,7 +47,7 @@ export default function AttendancePage() {
     enabled: !!selectedClass
   });
 
-  const { data: existingAttendance = [], isLoading: isLoadingAttendance } = useQuery({
+  const { data: existingAttendance, isLoading: isLoadingAttendance } = useQuery({
     queryKey: ['attendance', selectedClass, selectedDate],
     queryFn: async () => {
       if (!selectedClass) return [];
@@ -67,16 +67,14 @@ export default function AttendancePage() {
 
   // Pre-fill attendance when data loads
   useEffect(() => {
-    if (existingAttendance.length > 0) {
-      const newAtt: Record<string, 'present' | 'absent'> = {};
-      existingAttendance.forEach(a => {
-        newAtt[a.student_id] = a.status;
-      });
-      setAttendance(newAtt);
-    } else {
-      setAttendance({});
-    }
-  }, [existingAttendance, selectedClass, selectedDate]);
+    if (!existingAttendance) return;
+
+    const newAtt: Record<string, 'present' | 'absent'> = {};
+    existingAttendance.forEach(a => {
+      newAtt[a.student_id] = a.status;
+    });
+    setAttendance(newAtt);
+  }, [existingAttendance]);
 
   // Set default class if not set
   useEffect(() => {
