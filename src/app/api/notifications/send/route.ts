@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       details: [] as { id: string; status: 'sent' | 'failed'; error?: string }[],
     };
 
-    const url = `https://graph.facebook.com/v22.0/${phoneNumberId}/messages`;
+    const url = `https://graph.facebook.com/v25.0/${phoneNumberId}/messages`;
 
     for (const notification of notifications) {
       try {
@@ -79,30 +79,46 @@ export async function POST(request: Request) {
         let payload: any;
 
         if (templateName) {
-          // Send as a Template Message (Meta official way for notifications outside 24h window)
-          payload = {
-            messaging_product: 'whatsapp',
-            recipient_type: 'individual',
-            to: cleanPhone,
-            type: 'template',
-            template: {
-              name: templateName,
-              language: {
-                code: 'en_US',
-              },
-              components: [
-                {
-                  type: 'body',
-                  parameters: [
-                    {
-                      type: 'text',
-                      text: notification.message, // passing the entire generated message as parameter 1
-                    },
-                  ],
+          if (templateName === 'hello_world') {
+            // Send default Meta testing template (does not accept variables)
+            payload = {
+              messaging_product: 'whatsapp',
+              recipient_type: 'individual',
+              to: cleanPhone,
+              type: 'template',
+              template: {
+                name: 'hello_world',
+                language: {
+                  code: 'en_US',
                 },
-              ],
-            },
-          };
+              },
+            };
+          } else {
+            // Send custom template with variables
+            payload = {
+              messaging_product: 'whatsapp',
+              recipient_type: 'individual',
+              to: cleanPhone,
+              type: 'template',
+              template: {
+                name: templateName,
+                language: {
+                  code: 'en_US',
+                },
+                components: [
+                  {
+                    type: 'body',
+                    parameters: [
+                      {
+                        type: 'text',
+                        text: notification.message, // passing the generated text message as parameter 1
+                      },
+                    ],
+                  },
+                ],
+              },
+            };
+          }
         } else {
           // Send as a Free-form Text Message (Works in Sandbox if receiver messaged the bot in last 24h)
           payload = {
