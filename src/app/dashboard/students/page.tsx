@@ -382,12 +382,21 @@ export default function StudentsPage() {
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
             />
-            <Select
-              label="Class"
-              options={classDropdownOptions}
-              value={formData.class_id}
-              onChange={(e) => setFormData({ ...formData, class_id: e.target.value })}
-            />
+            <div>
+              <Select
+                label="Class"
+                placeholder={classes.length === 0 ? "No classes available" : "Select a class"}
+                options={classDropdownOptions}
+                value={formData.class_id}
+                onChange={(e) => setFormData({ ...formData, class_id: e.target.value })}
+                error={classes.length === 0 ? "No classes found. Please seed classes first." : undefined}
+              />
+              {classes.length === 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5 font-medium">
+                  Your <code>classes</code> table is empty. Please run the SQL seed script.
+                </p>
+              )}
+            </div>
             <Input
               label="Parent Name"
               placeholder="Parent's full name"
