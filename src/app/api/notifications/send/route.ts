@@ -144,6 +144,7 @@ export async function POST(request: Request) {
         const responseData = await response.json();
 
         if (!response.ok) {
+          console.error('Full Meta API Error Response:', JSON.stringify(responseData, null, 2));
           throw new Error(responseData.error?.message || 'Failed to send message via Meta API');
         }
 
