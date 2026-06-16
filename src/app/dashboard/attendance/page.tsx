@@ -54,7 +54,7 @@ export default function AttendancePage() {
       if (!selectedClass) return [];
       const studentIds = classStudents.map(s => s.id);
       if (studentIds.length === 0) return [];
-      
+
       const { data, error } = await supabase
         .from('attendance')
         .select('*')
@@ -129,7 +129,7 @@ export default function AttendancePage() {
       const { error: attError } = await supabase
         .from('attendance')
         .upsert(attendanceRecords, { onConflict: 'student_id, attendance_date' });
-      
+
       if (attError) throw attError;
 
       // Handle Notifications for absent students
@@ -139,7 +139,7 @@ export default function AttendancePage() {
         const selectedClassInfo = classes.find(c => c.id === selectedClass);
         const notifications = absentStudents.map(s => ({
           student_id: s.id,
-          message: generateNotificationMessage(s.full_name, `${selectedClassInfo?.name}-${selectedClassInfo?.section}`, selectedDate),
+          message: generateNotificationMessage(s.full_name, `${selectedClassInfo?.name}-${selectedClassInfo?.section}`, selectedDate, s.gender),
           channel: 'whatsapp' as const,
           status: 'pending' as const
         }));
@@ -167,18 +167,18 @@ export default function AttendancePage() {
           }
         }
       }
-      
+
       return { absentCount: absentStudents.length, sentCount };
     },
     onSuccess: ({ absentCount, sentCount }) => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
-      
+
       const alertSuffix = absentCount === 0
         ? ''
         : sentCount > 0
           ? ` (WhatsApp alerts sent to parents!)`
           : ` (Notifications queued)`;
-          
+
       showToast(
         `Attendance saved! ${stats.present} present, ${stats.absent} absent${alertSuffix}`,
         'success'

@@ -39,6 +39,7 @@ export default function StudentsPage() {
     parent_name: '',
     parent_phone: '',
     parent_email: '',
+    gender: '',
   });
 
   const { data: classes = [], isLoading: isLoadingClasses } = useQuery({
@@ -58,7 +59,7 @@ export default function StudentsPage() {
         .select('*, classes(name, section)')
         .order('full_name');
       if (error) throw error;
-      
+
       // Transform data to match Student type with class_name and section
       return data.map((s: any) => ({
         ...s,
@@ -137,7 +138,15 @@ export default function StudentsPage() {
 
   const openAddModal = () => {
     setEditingStudent(null);
-    setFormData({ roll_number: '', full_name: '', class_id: classes[0]?.id || '', parent_name: '', parent_phone: '', parent_email: '' });
+    setFormData({
+      roll_number: '',
+      full_name: '',
+      class_id: classes[0]?.id || '',
+      parent_name: '',
+      parent_phone: '',
+      parent_email: '',
+      gender: '',
+    });
     setShowAddModal(true);
   };
 
@@ -150,6 +159,7 @@ export default function StudentsPage() {
       parent_name: student.parent_name,
       parent_phone: student.parent_phone,
       parent_email: student.parent_email,
+      gender: student.gender || '',
     });
     setShowAddModal(true);
   };
@@ -159,7 +169,17 @@ export default function StudentsPage() {
       showToast('Please fill all required fields', 'warning');
       return;
     }
-    saveMutation.mutate(formData);
+
+    // Validate phone number
+    const phoneDigits = formData.parent_phone.replace(/\D/g, '');
+    if (!phoneDigits || phoneDigits.length < 10) {
+      showToast('Please enter a valid phone number', 'warning');
+      return;
+    }
+
+    // Auto-format to +91XXXXXXXXXX
+    const formattedPhone = '+' + phoneDigits;
+    saveMutation.mutate({ ...formData, parent_phone: formattedPhone });
   };
 
   const handleDelete = () => {
@@ -348,11 +368,10 @@ export default function StudentsPage() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  page === currentPage
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${page === currentPage
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                  }`}
               >
                 {page}
               </button>
@@ -397,6 +416,16 @@ export default function StudentsPage() {
                 </p>
               )}
             </div>
+            <Select
+              label="Gender"
+              placeholder="Select gender"
+              options={[
+                { value: 'male', label: 'Male (Son)' },
+                { value: 'female', label: 'Female (Daughter)' },
+              ]}
+              value={formData.gender}
+              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+            />
             <Input
               label="Parent Name"
               placeholder="Parent's full name"

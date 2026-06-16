@@ -28,6 +28,7 @@ export interface Student {
   parent_name: string;
   parent_phone: string;
   parent_email: string;
+  gender?: string;
   status: 'active' | 'inactive';
   created_at: string;
 }
