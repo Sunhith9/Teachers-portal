@@ -132,6 +132,8 @@ export async function POST(request: Request) {
           };
         }
 
+        console.log('Sending to phone number:', cleanPhone);
+
         const response = await fetch(url, {
           method: 'POST',
           headers: {
