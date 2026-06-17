@@ -110,6 +110,7 @@ export default function ReportsPage() {
         name: student.full_name,
         rollNo: student.roll_number,
         class: `${student.classes?.name}-${student.classes?.section}`,
+        gender: student.gender,
         present,
         absent,
         total,
@@ -327,7 +328,10 @@ export default function ReportsPage() {
                       <Avatar name={student.name} size="sm" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{student.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Roll #{student.rollNo} • {student.class}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Roll #{student.rollNo} • {student.class}
+                          {student.gender && ` • ${student.gender === 'male' ? 'Male' : 'Female'}`}
+                        </p>
                       </div>
                     </div>
                   </td>

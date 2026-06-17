@@ -24,6 +24,21 @@ export default function AttendancePage() {
   const [attendance, setAttendance] = useState<Record<string, 'present' | 'absent' | null>>({});
   const [sendAlertsImmediately, setSendAlertsImmediately] = useState(true);
 
+  // Load default preference from settings in localStorage
+  useEffect(() => {
+    const cachedNotifs = localStorage.getItem('notification_settings');
+    if (cachedNotifs) {
+      try {
+        const parsed = JSON.parse(cachedNotifs);
+        if (parsed.autoSendAlerts !== undefined) {
+          setSendAlertsImmediately(parsed.autoSendAlerts);
+        }
+      } catch (e) {
+        console.error('Failed to load notification settings', e);
+      }
+    }
+  }, []);
+
   const { data: classes = [], isLoading: isLoadingClasses } = useQuery({
     queryKey: ['classes'],
     queryFn: async () => {

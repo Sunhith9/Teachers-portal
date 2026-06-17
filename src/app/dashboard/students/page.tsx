@@ -179,7 +179,11 @@ export default function StudentsPage() {
 
     // Auto-format to +91XXXXXXXXXX
     const formattedPhone = '+' + phoneDigits;
-    saveMutation.mutate({ ...formData, parent_phone: formattedPhone });
+    saveMutation.mutate({
+      ...formData,
+      parent_phone: formattedPhone,
+      gender: formData.gender ? (formData.gender as 'male' | 'female') : undefined,
+    });
   };
 
   const handleDelete = () => {

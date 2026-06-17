@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     if (id === 'all') {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*, students(parent_phone)')
+        .select('*, students(parent_phone, full_name, gender, classes(name, section))')
         .eq('status', 'pending');
 
       if (error) throw error;
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     } else {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*, students(parent_phone)')
+        .select('*, students(parent_phone, full_name, gender, classes(name, section))')
         .eq('id', id)
         .single();
 
@@ -75,6 +75,11 @@ export async function POST(request: Request) {
 
         // Meta WhatsApp Cloud API expects recipient phone number with digits only (no +, spaces, or dashes)
         const cleanPhone = parentPhone.replace(/\D/g, '');
+
+        const relation = notification.students?.gender === 'male' ? 'son' : notification.students?.gender === 'female' ? 'daughter' : 'child';
+        const studentName = notification.students?.full_name || 'your child';
+        const className = notification.students?.classes ? `${notification.students.classes.name}-${notification.students.classes.section}` : '';
+        const notificationDate = new Date(notification.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
         let payload: any;
 
@@ -109,10 +114,10 @@ export async function POST(request: Request) {
                   {
                     type: 'body',
                     parameters: [
-                      {
-                        type: 'text',
-                        text: notification.message, // passing the generated text message as parameter 1
-                      },
+                      { type: 'text', text: relation },
+                      { type: 'text', text: studentName },
+                      { type: 'text', text: notificationDate },
+                      { type: 'text', text: className },
                     ],
                   },
                 ],

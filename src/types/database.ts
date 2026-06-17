@@ -28,8 +28,8 @@ export interface Student {
   parent_name: string;
   parent_phone: string;
   parent_email: string;
-  gender?: string;
   status: 'active' | 'inactive';
+  gender?: 'male' | 'female';
   created_at: string;
 }
 

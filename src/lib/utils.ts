@@ -15,8 +15,9 @@ export function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
-export function generateNotificationMessage(studentName: string, className: string, date: string) {
-  return `Dear Parent,\n\nYour child ${studentName} was marked absent on ${formatDate(date, 'MMMM dd, yyyy')}.\n\nClass: ${className}\n\nIf this absence was unexpected, please contact the school.\n\nRegards,\nSchool Administration`;
+export function generateNotificationMessage(studentName: string, className: string, date: string, gender?: string) {
+  const relation = gender === 'male' ? 'son' : gender === 'female' ? 'daughter' : 'child';
+  return `Dear Parent,\n\nYour ${relation} ${studentName} was marked absent on ${formatDate(date, 'MMMM dd, yyyy')}.\n\nClass: ${className}\n\nIf this absence was unexpected, please contact the school.\n\nRegards,\nSchool Administration`;
 }
 
 export function calculateAttendancePercentage(present: number, total: number) {
