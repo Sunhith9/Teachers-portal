@@ -25,6 +25,7 @@ export async function POST(request: Request) {
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
     const templateName = process.env.WHATSAPP_TEMPLATE_NAME;
+    console.log('Template name being used:', templateName);
 
     if (!accessToken || !phoneNumberId) {
       return NextResponse.json(
