@@ -171,9 +171,20 @@ export default function StudentsPage() {
     }
 
     // Validate phone number
-    const phoneDigits = formData.parent_phone.replace(/\D/g, '');
-    if (!phoneDigits || phoneDigits.length < 10) {
-      showToast('Please enter a valid phone number', 'warning');
+    let phoneDigits = formData.parent_phone.replace(/\D/g, '');
+    
+    // If it has leading 0 (common local dialing), strip it
+    if (phoneDigits.startsWith('0')) {
+      phoneDigits = phoneDigits.substring(1);
+    }
+
+    // If it's a 10-digit number, prepend Indian country code 91 by default
+    if (phoneDigits.length === 10) {
+      phoneDigits = '91' + phoneDigits;
+    }
+
+    if (!phoneDigits || phoneDigits.length !== 12) {
+      showToast('Please enter a valid 10-digit phone number', 'warning');
       return;
     }
 
