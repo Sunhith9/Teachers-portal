@@ -143,7 +143,7 @@ export default function StudentsPage() {
       full_name: '',
       class_id: classes[0]?.id || '',
       parent_name: '',
-      parent_phone: '',
+      parent_phone: '+91',
       parent_email: '',
       gender: '',
     });
