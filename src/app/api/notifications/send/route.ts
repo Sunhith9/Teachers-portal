@@ -109,7 +109,7 @@ export async function POST(request: Request) {
               template: {
                 name: templateName,
                 language: {
-                  code: 'en',
+                  code: 'en_US',
                 },
                 components: [
                   {
