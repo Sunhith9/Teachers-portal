@@ -131,8 +131,9 @@ export default function AttendancePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      const validStudentIds = new Set(classStudents.map(s => s.id));
       const attendanceRecords = Object.entries(attendance)
-        .filter(([_, status]) => status !== null)
+        .filter(([student_id, status]) => status !== null && validStudentIds.has(student_id))
         .map(([student_id, status]) => ({
           student_id,
           attendance_date: selectedDate,
