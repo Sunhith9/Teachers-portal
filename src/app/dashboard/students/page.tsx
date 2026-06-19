@@ -40,6 +40,7 @@ export default function StudentsPage() {
     parent_phone: '',
     parent_email: '',
     gender: '',
+    status: 'active' as 'active' | 'inactive',
   });
 
   const { data: classes = [], isLoading: isLoadingClasses } = useQuery({
@@ -91,6 +92,15 @@ export default function StudentsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      // 1. Delete notifications for this student first to avoid FK constraints
+      const { error: notifError } = await supabase.from('notifications').delete().eq('student_id', id);
+      if (notifError) throw notifError;
+
+      // 2. Delete attendance records for this student first to avoid FK constraints
+      const { error: attError } = await supabase.from('attendance').delete().eq('student_id', id);
+      if (attError) throw attError;
+
+      // 3. Delete the student
       const { error } = await supabase.from('students').delete().eq('id', id);
       if (error) throw error;
     },
@@ -146,6 +156,7 @@ export default function StudentsPage() {
       parent_phone: '+91',
       parent_email: '',
       gender: '',
+      status: 'active',
     });
     setShowAddModal(true);
   };
@@ -160,6 +171,7 @@ export default function StudentsPage() {
       parent_phone: student.parent_phone,
       parent_email: student.parent_email,
       gender: student.gender || '',
+      status: student.status,
     });
     setShowAddModal(true);
   };
@@ -459,6 +471,16 @@ export default function StudentsPage() {
               placeholder="parent@email.com"
               value={formData.parent_email}
               onChange={(e) => setFormData({ ...formData, parent_email: e.target.value })}
+            />
+            <Select
+              label="Status"
+              placeholder="Select status"
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+              ]}
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
