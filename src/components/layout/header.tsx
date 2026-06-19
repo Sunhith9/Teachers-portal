@@ -87,7 +87,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
         </button>
 
         {/* Notifications */}
-        <button className="relative p-2 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
+        <button
+          onClick={() => router.push('/dashboard/notifications')}
+          className="relative p-2 rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+          aria-label="View notifications"
+        >
           <Bell className="h-5 w-5" />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full" />
         </button>
